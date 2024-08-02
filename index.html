@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jujutsu Story Time</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #ffecd2;
+            color: #333;
+        }
+        header {
+            background: #444;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+        }
+        .title {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: black;
+            text-shadow: 2px 2px 4px #000000;
+            background: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExazh1b3plOGtubmlnazRzMzQ5MzVpN2JxMTdidHY4a2V0a2RjNHRpeCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/bVSCpa4IoTH8s/giphy.gif');
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .container {
+            padding: 20px;
+        }
+        .character-creation {
+            background: white;
+            padding: 30px;
+            margin: 20px auto;
+            border-radius: 10px;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            border: 3px solid #000;
+        }
+        h1, h2 {
+            margin: 0 0 20px;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"], button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        input[type="submit"]:hover, button:hover {
+            background: #555;
+        }
+        .roll-remaining {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .chosen {
+            color: gold;
+            animation: color-change 1s infinite alternate;
+        }
+        @keyframes color-change {
+            0% { color: gold; }
+            100% { color: silver; }
+        }
+        .technique-description, .average-stats {
+            background: white;
+            border: 3px solid #000;
+            border-radius: 5px;
+            padding: 10px;
+            position: fixed;
+            top: 100px;
+            max-width: 200px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .technique-description p, .average-stats p {
+            margin: 0;
+        }
+        .average-stats {
+            left: 20px;
+        }
+        .technique-description {
+            right: 20px;
+        }
+        .technique-description input {
+            width: 100%;
+            padding: 5px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .sub-race {
+            color: purple;
+            text-shadow: 1px 1px 2px black;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="title">Jujutsu Story Time</h1>
+        <p>Create and customize your RPG characters with unique abilities.</p>
+    </header>
+    <div class="container">
+        <div id="average-stats" class="average-stats">
+            <h3>Average Stats</h3>
+            <p>Strength: 5/10</p>
+            <p>Speed: 5/10</p>
+            <p>Combat Prowess: 5/10</p>
+            <p>Cursed Energy: 5000/10000</p>
+        </div>
+        <div id="technique-description" class="technique-description">
+            <p>Technique Description</p>
+            <input type="text" id="technique-description-input" placeholder="Edit technique description" oninput="editTechniqueDescription()">
+        </div>
+        <div class="character-creation">
+            <h2>Character Creation</h2>
+            <form action="mailto:bradenr213x@gmail.com" method="post" enctype="text/plain" onsubmit="saveFormData()">
+                <label for="character-name">Character Name:</label>
+                <input type="text" id="character-name" name="character-name" required oninput="handleNameInput(this.value)"><br>
+                <label for="character-backstory">Backstory:</label>
+                <textarea id="character-backstory" name="character-backstory" rows="4" cols="50" required></textarea><br>
+                <label for="strength">Strength: <span id="strength-display">0/10</span></label>
+                <input type="number" id="strength" name="strength" readonly>
+                <button type="button" onclick="randomizeStrength()">Randomize Strength</button> <span class="roll-remaining" id="strength-remaining">3/3 Remaining Rolls</span><br>
+                <label for="cursed-energy">Cursed Energy: <span id="cursed-energy-display">0/10000</span></label>
+                <input type="number" id="cursed-energy" name="cursed-energy" readonly>
+                <button type="button" onclick="randomizeCursedEnergy()">Randomize Cursed Energy</button> <span class="roll-remaining" id="cursed-energy-remaining">3/3 Remaining Rolls</span><br>
+                <label for="speed">Speed: <span id="speed-display">0/10</span></label>
+                <input type="number" id="speed" name="speed" readonly>
+                <button type="button" onclick="randomizeSpeed()">Randomize Speed</button> <span class="roll-remaining" id="speed-remaining">3/3 Remaining Rolls</span><br>
+                <label for="combat-prowess">Combat Prowess: <span id="combat-prowess-display">0/10</span></label>
+                <input type="number" id="combat-prowess" name="combat-prowess" readonly>
+                <button type="button" onclick="randomizeCombatProwess()">Randomize Combat Prowess</button> <span class="roll-remaining" id="combat-prowess-remaining">3/3 Remaining Rolls</span><br>
+                <label for="clan">Clan:</label>
+                <input type="text" id="clan" name="clan" readonly>
+                <button type="button" onclick="randomizeClan()">Randomize Clan</button> <span class="roll-remaining" id="clan-remaining">3/3 Remaining Rolls</span><br>
+                <label for="race">Race:</label>
+                <input type="text" id="race" name="race" readonly>
+                <button type="button" onclick="randomizeRace()">Randomize Race</button> <span class="roll-remaining" id="race-remaining">3/3 Remaining Rolls</span><br>
+                <label for="sub-race" id="sub-race-label" style="display:none;">Sub-Race:</label>
+                <input type="text" id="sub-race" name="sub-race" readonly style="display:none;"><br>
+                <label for="cursed-technique">Cursed Technique:</label>
+                <input type="text" id="cursed-technique" name="cursed-technique" readonly>
+                <button type="button" onclick="randomizeCursedTechnique()">Randomize Cursed Technique</button> <span class="roll-remaining" id="cursed-technique-remaining">3/3 Remaining Rolls</span><br>
+                <input type="submit" value="Submit Character">
+            </form>
+        </div>
+    </div>
+    <script>
+        let strengthAttempts = localStorage.getItem('strengthAttempts') ? parseInt(localStorage.getItem('strengthAttempts')) : 3;
+        let combatProwessAttempts = localStorage.getItem('combatProwessAttempts') ? parseInt(localStorage.getItem('combatProwessAttempts')) : 3;
+        let speedAttempts = localStorage.getItem('speedAttempts') ? parseInt(localStorage.getItem('speedAttempts')) : 3;
+        let cursedEnergyAttempts = localStorage.getItem('cursedEnergyAttempts') ? parseInt(localStorage.getItem('cursedEnergyAttempts')) : 3;
+        let raceAttempts = localStorage.getItem('raceAttempts') ? parseInt(localStorage.getItem('raceAttempts')) : 3;
+        let clanAttempts = localStorage.getItem('clanAttempts') ? parseInt(localStorage.getItem('clanAttempts')) : 3;
+        let cursedTechniqueAttempts = localStorage.getItem('cursedTechniqueAttempts') ? parseInt(localStorage.getItem('cursedTechniqueAttempts')) : 3;
+        let secondaryTechniqueAdded = false;
+        let currentClanModifier = { strength: 0, speed: 0, cursedEnergy: 0 };
+        let currentRaceModifier = { strength: 0, combatProwess: 0, speed: 0, cursedEnergy: 0 };
+        let previousClan = '';
+        let previousStats = null;
+        let originalTechnique = '';
+        let previousAttempts = {};
+
+        const clans = [
+            { name: "Gojo Clan", chance: 1, modifier: { strength: 0, speed: 0, cursedEnergy: 3000 } },
+            { name: "Zenin", chance: 1, modifier: { strength: 2, speed: 2, cursedEnergy: 0 } },
+            { name: "Kamo", chance: 1, modifier: { strength: 1, speed: 1, cursedEnergy: 1200 } },
+            { name: "Clan 4", chance: 97, modifier: { strength: 0, speed: 0, cursedEnergy: 0 } },
+        ];
+
+        const cursedTechniques = [
+            { name: "Spirit Cursed Technique 1", description: "Description for Spirit Cursed Technique 1" },
+            { name: "Spirit Cursed Technique 2", description: "Description for Spirit Cursed Technique 2" },
+            { name: "Spirit Cursed Technique 3", description: "Description for Spirit Cursed Technique 3" },
+            { name: "Spirit Cursed Technique 4", description: "Description for Spirit Cursed Technique 4" },
+            { name: "Spirit Cursed Technique 5", description: "Description for Spirit Cursed Technique 5" },
+            { name: "Spirit Cursed Technique 6", description: "Description for Spirit Cursed Technique 6" },
+            { name: "Spirit Cursed Technique 7", description: "Description for Spirit Cursed Technique 7" },
+            { name: "Spirit Cursed Technique 8", description: "Description for Spirit Cursed Technique 8" },
+            { name: "Spirit Cursed Technique 9", description: "Description for Spirit Cursed Technique 9" },
+            { name: "Spirit Cursed Technique 10", description: "Description for Spirit Cursed Technique 10" },
+            { name: "Spirit Cursed Technique 11", description: "Description for Spirit Cursed Technique 11" },
+            { name: "Spirit Cursed Technique 12", description: "Description for Spirit Cursed Technique 12" },
+            { name: "Spirit Cursed Technique 13", description: "Description for Spirit Cursed Technique 13" },
+            { name: "Spirit Cursed Technique 14", description: "Description for Spirit Cursed Technique 14" },
+            { name: "Spirit Cursed Technique 15", description: "Description for Spirit Cursed Technique 15" },
+        ];
+
+        const subRaceTechniques = {
+            "Grade 4": [
+                { name: "Grade 4 Spirit Technique 1", description: "Description for Grade 4 Spirit Technique 1" },
+                { name: "Grade 4 Spirit Technique 2", description: "Description for Grade 4 Spirit Technique 2" },
+                { name: "Grade 4 Spirit Technique 3", description: "Description for Grade 4 Spirit Technique 3" },
+                { name: "Grade 4 Spirit Technique 4", description: "Description for Grade 4 Spirit Technique 4" },
+                { name: "Grade 4 Spirit Technique 5", description: "Description for Grade 4 Spirit Technique 5" },
+                { name: "Grade 4 Spirit Technique 6", description: "Description for Grade 4 Spirit Technique 6" },
+                { name: "Grade 4 Spirit Technique 7", description: "Description for Grade 4 Spirit Technique 7" },
+                { name: "Grade 4 Spirit Technique 8", description: "Description for Grade 4 Spirit Technique 8" },
+                { name: "Grade 4 Spirit Technique 9", description: "Description for Grade 4 Spirit Technique 9" },
+                { name: "Grade 4 Spirit Technique 10", description: "Description for Grade 4 Spirit Technique 10" },
+                { name: "Grade 4 Spirit Technique 11", description: "Description for Grade 4 Spirit Technique 11" },
+                { name: "Grade 4 Spirit Technique 12", description: "Description for Grade 4 Spirit Technique 12" },
+                { name: "Grade 4 Spirit Technique 13", description: "Description for Grade 4 Spirit Technique 13" },
+                { name: "Grade 4 Spirit Technique 14", description: "Description for Grade 4 Spirit Technique 14" },
+                { name: "Grade 4 Spirit Technique 15", description: "Description for Grade 4 Spirit Technique 15" },
+            ],
+            "Grade 3": [
+                { name: "Grade 3 Spirit Technique 1", description: "Description for Grade 3 Spirit Technique 1" },
+                { name: "Grade 3 Spirit Technique 2", description: "Description for Grade 3 Spirit Technique 2" },
+                { name: "Grade 3 Spirit Technique 3", description: "Description for Grade 3 Spirit Technique 3" },
+                { name: "Grade 3 Spirit Technique 4", description: "Description for Grade 3 Spirit Technique 4" },
+                { name: "Grade 3 Spirit Technique 5", description: "Description for Grade 3 Spirit Technique 5" },
+                { name: "Grade 3 Spirit Technique 6", description: "Description for Grade 3 Spirit Technique 6" },
+                { name: "Grade 3 Spirit Technique 7", description: "Description for Grade 3 Spirit Technique 7" },
+                { name: "Grade 3 Spirit Technique 8", description: "Description for Grade 3 Spirit Technique 8" },
+                { name: "Grade 3 Spirit Technique 9", description: "Description for Grade 3 Spirit Technique 9" },
+                { name: "Grade 3 Spirit Technique 10", description: "Description for Grade 3 Spirit Technique 10" },
+                { name: "Grade 3 Spirit Technique 11", description: "Description for Grade 3 Spirit Technique 11" },
+                { name: "Grade 3 Spirit Technique 12", description: "Description for Grade 3 Spirit Technique 12" },
+                { name: "Grade 3 Spirit Technique 13", description: "Description for Grade 3 Spirit Technique 13" },
+                { name: "Grade 3 Spirit Technique 14", description: "Description for Grade 3 Spirit Technique 14" },
+                { name: "Grade 3 Spirit Technique 15", description: "Description for Grade 3 Spirit Technique 15" },
+            ],
+            "Grade 2": [
+                { name: "Grade 2 Spirit Technique 1", description: "Description for Grade 2 Spirit Technique 1" },
+                { name: "Grade 2 Spirit Technique 2", description: "Description for Grade 2 Spirit Technique 2" },
+                { name: "Grade 2 Spirit Technique 3", description: "Description for Grade 2 Spirit Technique 3" },
+                { name: "Grade 2 Spirit Technique 4", description: "Description for Grade 2 Spirit Technique 4" },
+                { name: "Grade 2 Spirit Technique 5", description: "Description for Grade 2 Spirit Technique 5" },
+                { name: "Grade 2 Spirit Technique 6", description: "Description for Grade 2 Spirit Technique 6" },
+                { name: "Grade 2 Spirit Technique 7", description: "Description for Grade 2 Spirit Technique 7" },
+                { name: "Grade 2 Spirit Technique 8", description: "Description for Grade 2 Spirit Technique 8" },
+                { name: "Grade 2 Spirit Technique 9", description: "Description for Grade 2 Spirit Technique 9" },
+                { name: "Grade 2 Spirit Technique 10", description: "Description for Grade 2 Spirit Technique 10" },
+                { name: "Grade 2 Spirit Technique 11", description: "Description for Grade 2 Spirit Technique 11" },
+                { name: "Grade 2 Spirit Technique 12", description: "Description for Grade 2 Spirit Technique 12" },
+                { name: "Grade 2 Spirit Technique 13", description: "Description for Grade 2 Spirit Technique 13" },
+                { name: "Grade 2 Spirit Technique 14", description: "Description for Grade 2 Spirit Technique 14" },
+                { name: "Grade 2 Spirit Technique 15", description: "Description for Grade 2 Spirit Technique 15" },
+            ],
+            "Grade 1": [
+                { name: "Grade 1 Spirit Technique 1", description: "Description for Grade 1 Spirit Technique 1" },
+                { name: "Grade 1 Spirit Technique 2", description: "Description for Grade 1 Spirit Technique 2" },
+                { name: "Grade 1 Spirit Technique 3", description: "Description for Grade 1 Spirit Technique 3" },
+                { name: "Grade 1 Spirit Technique 4", description: "Description for Grade 1 Spirit Technique 4" },
+                { name: "Grade 1 Spirit Technique 5", description: "Description for Grade 1 Spirit Technique 5" },
+                { name: "Grade 1 Spirit Technique 6", description: "Description for Grade 1 Spirit Technique 6" },
+                { name: "Grade 1 Spirit Technique 7", description: "Description for Grade 1 Spirit Technique 7" },
+                { name: "Grade 1 Spirit Technique 8", description: "Description for Grade 1 Spirit Technique 8" },
+                { name: "Grade 1 Spirit Technique 9", description: "Description for Grade 1 Spirit Technique 9" },
+                { name: "Grade 1 Spirit Technique 10", description: "Description for Grade 1 Spirit Technique 10" },
+                { name: "Grade 1 Spirit Technique 11", description: "Description for Grade 1 Spirit Technique 11" },
+                { name: "Grade 1 Spirit Technique 12", description: "Description for Grade 1 Spirit Technique 12" },
+                { name: "Grade 1 Spirit Technique 13", description: "Description for Grade 1 Spirit Technique 13" },
+                { name: "Grade 1 Spirit Technique 14", description: "Description for Grade 1 Spirit Technique 14" },
+                { name: "Grade 1 Spirit Technique 15", description: "Description for Grade 1 Spirit Technique 15" },
+            ],
+            "Special Grade": [
+                { name: "Special Grade Spirit Technique 1", description: "Description for Special Grade Spirit Technique 1" },
+                { name: "Special Grade Spirit Technique 2", description: "Description for Special Grade Spirit Technique 2" },
+                { name: "Special Grade Spirit Technique 3", description: "Description for Special Grade Spirit Technique 3" },
+                { name: "Special Grade Spirit Technique 4", description: "Description for Special Grade Spirit Technique 4" },
+                { name: "Special Grade Spirit Technique 5", description: "Description for Special Grade Spirit Technique 5" },
+                { name: "Special Grade Spirit Technique 6", description: "Description for Special Grade Spirit Technique 6" },
+                { name: "Special Grade Spirit Technique 7", description: "Description for Special Grade Spirit Technique 7" },
+                { name: "Special Grade Spirit Technique 8", description: "Description for Special Grade Spirit Technique 8" },
+                { name: "Special Grade Spirit Technique 9", description: "Description for Special Grade Spirit Technique 9" },
+                { name: "Special Grade Spirit Technique 10", description: "Description for Special Grade Spirit Technique 10" },
+                { name: "Special Grade Spirit Technique 11", description: "Description for Special Grade Spirit Technique 11" },
+                { name: "Special Grade Spirit Technique 12", description: "Description for Special Grade Spirit Technique 12" },
+                { name: "Special Grade Spirit Technique 13", description: "Description for Special Grade Spirit Technique 13" },
+                { name: "Special Grade Spirit Technique 14", description: "Description for Special Grade Spirit Technique 14" },
+                { name: "Special Grade Spirit Technique 15", description: "Description for Special Grade Spirit Technique 15" },
+            ]
+        };
+
+        const races = [
+            { name: "Human", chance: 68, modifier: { strength: 0, combatProwess: 0, speed: 0, cursedEnergy: 0 } },
+            { name: "Cursed Spirit", chance: 15, subRaces: [
+                { name: "Grade 4", chance: 75, modifier: { strength: 0, combatProwess: 0, speed: 0, cursedEnergy: 5000 } },
+                { name: "Grade 3", chance: 15, modifier: { strength: 0, combatProwess: 0, speed: 0, cursedEnergy: 5000 } },
+                { name: "Grade 2", chance: 5, modifier: { strength: 0, combatProwess: 0, speed: 0, cursedEnergy: 5000 } },
+                { name: "Grade 1", chance: 4, modifier: { strength: 1, combatProwess: 1, speed: 1, cursedEnergy: 7000 } },
+                { name: "Special Grade", chance: 1, modifier: { strength: 2, combatProwess: 2, speed: 2, cursedEnergy: 14000 } },
+            ], modifier: { strength: 1, combatProwess: 1, speed: 1, cursedEnergy: 1500 } },
+            { name: "Death Womb", chance: 7, modifier: { strength: 2, combatProwess: 2, speed: 2, cursedEnergy: 2300 } },
+            { name: "Reincarnation", chance: 10, modifier: { strength: 2, combatProwess: 2, speed: 2, cursedEnergy: 5000 } }
+        ];
+
+        function randomize(array) {
+            const totalChance = array.reduce((total, item) => total + item.chance, 0);
+            const random = Math.random() * totalChance;
+            let cumulativeChance = 0;
+
+            for (let item of array) {
+                cumulativeChance += item.chance;
+                if (random < cumulativeChance) {
+                    return item;
+                }
+            }
+        }
+
+        function applyModifier(modifier) {
+            document.getElementById('strength').value = Math.max(0, parseInt(document.getElementById('strength').value || 0) + modifier.strength);
+            document.getElementById('combat-prowess').value = Math.max(0, parseInt(document.getElementById('combat-prowess').value || 0) + modifier.combatProwess);
+            document.getElementById('speed').value = Math.max(0, parseInt(document.getElementById('speed').value || 0) + modifier.speed);
+            document.getElementById('cursed-energy').value = Math.max(0, parseInt(document.getElementById('cursed-energy').value || 0) + modifier.cursedEnergy);
+        }
+
+        function removeModifier(modifier) {
+            document.getElementById('strength').value = Math.max(0, parseInt(document.getElementById('strength').value || 0) - modifier.strength);
+            document.getElementById('combat-prowess').value = Math.max(0, parseInt(document.getElementById('combat-prowess').value || 0) - modifier.combatProwess);
+            document.getElementById('speed').value = Math.max(0, parseInt(document.getElementById('speed').value || 0) - modifier.speed);
+            document.getElementById('cursed-energy').value = Math.max(0, parseInt(document.getElementById('cursed-energy').value || 0) - modifier.cursedEnergy);
+        }
+
+        function randomizeStrength() {
+            if (strengthAttempts > 0) {
+                const strength = weightedRandom(10);
+                document.getElementById('strength').value = strength;
+                document.getElementById('strength-display').innerText = `${strength}/10`;
+                strengthAttempts--;
+                document.getElementById('strength-remaining').innerText = `${strengthAttempts}/3 Remaining Rolls`;
+                localStorage.setItem('strengthAttempts', strengthAttempts);
+            }
+        }
+
+        function randomizeCursedEnergy() {
+            if (cursedEnergyAttempts > 0) {
+                const cursedEnergy = weightedRandom(10000);
+                document.getElementById('cursed-energy').value = cursedEnergy;
+                document.getElementById('cursed-energy-display').innerText = `${cursedEnergy}/10000`;
+                cursedEnergyAttempts--;
+                document.getElementById('cursed-energy-remaining').innerText = `${cursedEnergyAttempts}/3 Remaining Rolls`;
+                localStorage.setItem('cursedEnergyAttempts', cursedEnergyAttempts);
+            }
+        }
+
+        function randomizeSpeed() {
+            if (speedAttempts > 0) {
+                const speed = weightedRandom(10);
+                document.getElementById('speed').value = speed;
+                document.getElementById('speed-display').innerText = `${speed}/10`;
+                speedAttempts--;
+                document.getElementById('speed-remaining').innerText = `${speedAttempts}/3 Remaining Rolls`;
+                localStorage.setItem('speedAttempts', speedAttempts);
+            }
+        }
+
+        function randomizeCombatProwess() {
+            if (combatProwessAttempts > 0) {
+                const combatProwess = weightedRandom(10);
+                document.getElementById('combat-prowess').value = combatProwess;
+                document.getElementById('combat-prowess-display').innerText = `${combatProwess}/10`;
+                combatProwessAttempts--;
+                document.getElementById('combat-prowess-remaining').innerText = `${combatProwessAttempts}/3 Remaining Rolls`;
+                localStorage.setItem('combatProwessAttempts', combatProwessAttempts);
+            }
+        }
+
+        function randomizeClan() {
+            if (clanAttempts > 0) {
+                if (currentClanModifier) {
+                    remove                   Modifier(currentClanModifier);
+                }
+                const clan = randomize(clans);
+                document.getElementById('clan').value = clan.name;
+                applyModifier(clan.modifier);
+                currentClanModifier = clan.modifier;
+                clanAttempts--;
+                document.getElementById('clan-remaining').innerText = `${clanAttempts}/3 Remaining Rolls`;
+                localStorage.setItem('clanAttempts', clanAttempts);
+            }
+        }
+
+        function randomizeRace() {
+            if (raceAttempts > 0) {
+                if (currentRaceModifier) {
+                    removeModifier(currentRaceModifier);
+                }
+                const race = randomize(races);
+                document.getElementById('race').value = race.name;
+                currentRaceModifier = race.modifier;
+                applyModifier(race.modifier);
+                if (race.name === "Cursed Spirit") {
+                    randomizeSubRace(race.subRaces);
+                    document.getElementById('sub-race').style.display = 'block';
+                    document.getElementById('sub-race-label').style.display = 'block';
+                } else {
+                    document.getElementById('sub-race').style.display = 'none';
+                    document.getElementById('sub-race-label').style.display = 'none';
+                }
+                raceAttempts--;
+                document.getElementById('race-remaining').innerText = `${raceAttempts}/3 Remaining Rolls`;
+                localStorage.setItem('raceAttempts', raceAttempts);
+            }
+        }
+
+        function randomizeSubRace(subRaces) {
+            const subRace = randomize(subRaces);
+            document.getElementById('sub-race').value = subRace.name;
+            removeModifier(currentRaceModifier);
+            currentRaceModifier = subRace.modifier;
+            applyModifier(subRace.modifier);
+        }
+
+        function randomizeCursedTechnique() {
+            if (cursedTechniqueAttempts > 0) {
+                const race = document.getElementById('race').value;
+                let techniques;
+
+                if (race === "Cursed Spirit") {
+                    const subRace = document.getElementById('sub-race').value;
+                    techniques = subRaceTechniques[subRace];
+                } else {
+                    techniques = cursedTechniques;
+                }
+
+                const technique = randomize(techniques);
+                document.getElementById('cursed-technique').value = technique.name;
+                document.getElementById('technique-description-input').value = technique.description;
+                cursedTechniqueAttempts--;
+                document.getElementById('cursed-technique-remaining').innerText = `${cursedTechniqueAttempts}/3 Remaining Rolls`;
+                localStorage.setItem('cursedTechniqueAttempts', cursedTechniqueAttempts);
+            }
+        }
+
+        function editTechniqueDescription() {
+            const description = document.getElementById('technique-description-input').value;
+            document.getElementById('technique-description').querySelector('p').innerText = description;
+        }
+
+        function weightedRandom(max) {
+            const weights = Array.from({length: max}, (_, i) => i < max / 2 ? (i + 1) * 10 : (max - i) * 10);
+            const totalWeight = weights.reduce((acc, weight) => acc + weight, 0);
+            const random = Math.random() * totalWeight;
+
+            let cumulativeWeight = 0;
+            for (let i = 0; i < weights.length; i++) {
+                cumulativeWeight += weights[i];
+                if (random < cumulativeWeight) {
+                    return i + 1;
+                }
+            }
+        }
+
+        function handleNameInput(value) {
+            if (value.toLowerCase() === 'reset') {
+                resetAll();
+            } else if (value.toLowerCase() === 'master') {
+                previousAttempts = {
+                    strengthAttempts,
+                    combatProwessAttempts,
+                    speedAttempts,
+                    cursedEnergyAttempts,
+                    raceAttempts,
+                    clanAttempts,
+                    cursedTechniqueAttempts
+                };
+                strengthAttempts = combatProwessAttempts = speedAttempts = cursedEnergyAttempts = raceAttempts = clanAttempts = cursedTechniqueAttempts = Infinity;
+                document.getElementById('strength-remaining').innerText = `Unlimited Rolls`;
+                document.getElementById('combat-prowess-remaining').innerText = `Unlimited Rolls`;
+                document.getElementById('speed-remaining').innerText = `Unlimited Rolls`;
+                document.getElementById('cursed-energy-remaining').innerText = `Unlimited Rolls`;
+                document.getElementById('race-remaining').innerText = `Unlimited Rolls`;
+                document.getElementById('clan-remaining').innerText = `Unlimited Rolls`;
+                document.getElementById('cursed-technique-remaining').innerText = `Unlimited Rolls`;
+            } else if (previousAttempts && previousAttempts.strengthAttempts !== undefined) {
+                strengthAttempts = previousAttempts.strengthAttempts;
+                combatProwessAttempts = previousAttempts.combatProwessAttempts;
+                speedAttempts = previousAttempts.speedAttempts;
+                cursedEnergyAttempts = previousAttempts.cursedEnergyAttempts;
+                raceAttempts = previousAttempts.raceAttempts;
+                clanAttempts = previousAttempts.clanAttempts;
+                cursedTechniqueAttempts = previousAttempts.cursedTechniqueAttempts;
+                document.getElementById('strength-remaining').innerText = `${strengthAttempts}/3 Remaining Rolls`;
+                document.getElementById('combat-prowess-remaining').innerText = `${combatProwessAttempts}/3 Remaining Rolls`;
+                document.getElementById('speed-remaining').innerText = `${speedAttempts}/3 Remaining Rolls`;
+                document.getElementById('cursed-energy-remaining').innerText = `${cursedEnergyAttempts}/3 Remaining Rolls`;
+                document.getElementById('race-remaining').innerText = `${raceAttempts}/3 Remaining Rolls`;
+                document.getElementById('clan-remaining').innerText = `${clanAttempts}/3 Remaining Rolls`;
+                document.getElementById('cursed-technique-remaining').innerText = `${cursedTechniqueAttempts}/3 Remaining Rolls`;
+                previousAttempts = {};
+            }
+        }
+
+        function saveFormData() {
+            localStorage.setItem('characterName', document.getElementById('character-name').value);
+            localStorage.setItem('characterBackstory', document.getElementById('character-backstory').value);
+            localStorage.setItem('strength', document.getElementById('strength').value);
+            localStorage.setItem('cursedEnergy', document.getElementById('cursed-energy').value);
+            localStorage.setItem('speed', document.getElementById('speed').value);
+            localStorage.setItem('combatProwess', document.getElementById('combat-prowess').value);
+            localStorage.setItem('clan', document.getElementById('clan').value);
+            localStorage.setItem('race', document.getElementById('race').value);
+            localStorage.setItem('subRace', document.getElementById('sub-race').value);
+            localStorage.setItem('cursedTechnique', document.getElementById('cursed-technique').value);
+            localStorage.setItem('techniqueDescription', document.getElementById('technique-description-input').value);
+        }
+
+        function loadFormData() {
+            if (localStorage.getItem('characterName')) {
+                document.getElementById('character-name').value = localStorage.getItem('characterName');
+            }
+            if (localStorage.getItem('characterBackstory')) {
+                document.getElementById('character-backstory').value = localStorage.getItem('characterBackstory');
+            }
+            if (localStorage.getItem('strength')) {
+                document.getElementById('strength').value = localStorage.getItem('strength');
+                document.getElementById('strength-display').innerText = `${localStorage.getItem('strength')}/10`;
+            }
+            if (localStorage.getItem('cursedEnergy')) {
+                document.getElementById('cursed-energy').value = localStorage.getItem('cursedEnergy');
+                document.getElementById('cursed-energy-display').innerText = `${localStorage.getItem('cursedEnergy')}/10000`;
+            }
+            if (localStorage.getItem('speed')) {
+                document.getElementById('speed').value = localStorage.getItem('speed');
+                document.getElementById('speed-display').innerText = `${localStorage.getItem('speed')}/10`;
+            }
+            if (localStorage.getItem('combatProwess')) {
+                document.getElementById('combat-prowess').value = localStorage.getItem('combatProwess');
+                document.getElementById('combat-prowess-display').innerText = `${localStorage.getItem('combatProwess')}/10`;
+            }
+            if (localStorage.getItem('clan')) {
+                document.getElementById('clan').value = localStorage.getItem('clan');
+            }
+            if (localStorage.getItem('race')) {
+                document.getElementById('race').value = localStorage.getItem('race');
+            }
+            if (localStorage.getItem('subRace')) {
+                document.getElementById('sub-race').value = localStorage.getItem('subRace');
+                document.getElementById('sub-race').style.display = 'block';
+                document.getElementById('sub-race-label').style.display = 'block';
+            }
+            if (localStorage.getItem('cursedTechnique')) {
+                document.getElementById('cursed-technique').value = localStorage.getItem('cursedTechnique');
+            }
+            if (localStorage.getItem('techniqueDescription')) {
+                document.getElementById('technique-description-input').value = localStorage.getItem('techniqueDescription');
+                document.getElementById('technique-description').querySelector('p').innerText = localStorage.getItem('techniqueDescription');
+            }
+        }
+
+        window.onload = function() {
+            loadFormData();
+        };
+    </script>
+</body>
+</html>
